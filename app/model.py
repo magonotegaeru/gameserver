@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.sql import expression
 
 from .db import engine
 
@@ -29,6 +30,7 @@ class SafeUser(BaseModel):
 def create_user(name: str, leader_card_id: int) -> str:
     """Create new user and returns their token"""
     token = str(uuid.uuid4())
+    # uuidは、何かのidを設定するときによく使用される乱数生成器みたいなもの。
     # NOTE: tokenが衝突したらリトライする必要がある.
     with engine.begin() as conn:
         result = conn.execute(
@@ -43,7 +45,19 @@ def create_user(name: str, leader_card_id: int) -> str:
 
 def _get_user_by_token(conn, token: str) -> Optional[SafeUser]:
     # TODO: 実装
-    pass
+    # res = conn.execute(text("select * from user where token='wdUZxFXT'"))
+    result = conn.execute(
+        text("SELECT `id`, `name`, `leader_card_id` FROM `user` WHERE `token`=:token"),
+        dict(token=token),
+    )
+    try:
+        row = result.one()
+    except NoResultFound:
+        return None
+    return SafeUser.from_orm(row)
+    # Configでorm_mode=TrueしておくとSafeUser.from_orm(row)が使える。
+    # このメソッドは次と同じ。
+    # SafeUser(id=row.id, name=row.name,leader_card_id=row.leader_card_id)
 
 
 def get_user_by_token(token: str) -> Optional[SafeUser]:
@@ -51,8 +65,22 @@ def get_user_by_token(token: str) -> Optional[SafeUser]:
         return _get_user_by_token(conn, token)
 
 
+# 久しぶりだからメモ
+# from app.model import get_user_by_token
+# で他で使用できるようになる。
+
+
 def update_user(token: str, name: str, leader_card_id: int) -> None:
     # このコードを実装してもらう
     with engine.begin() as conn:
         # TODO: 実装
+        user = _get_user_by_token(conn, token)
+        conn.execute(
+            text(
+                "UPDATE `user` SET `name`=:name,`leader_card_id`=:leader_card_id WHERE `id`=:id"
+            ),
+            # dict(name=name, leader_card_id=leader_card_id, id=user.id)
+            {"name": name, "leader_card_id": leader_card_id, "id": user.id}
+            # text(f"UPDATE `user` SET `name`={name} `leader_card_id`=:{leader_card_id} WHERE `id`={user.id}"),
+        )
         pass

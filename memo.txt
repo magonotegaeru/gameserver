@@ -1,0 +1,58 @@
+(gameserver)が、時間経過などで出てこない場合、
+@magonotegaeru ➜ /workspaces/gameserver/venv/bin (main ✗) $ source activate
+をすれば、解決する。
+
+
+
+1日目実行例
+(gameserver) @magonotegaeru ➜ /workspaces/gameserver (main ✗) $ ipython
+Python 3.10.0 (default, Oct 13 2021, 08:45:17) [GCC 10.2.1 20210110]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.30.1 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: from app.model import create_user
+
+In [2]: from app.model import get_user_by_token
+
+In [3]: niko_token = create_user("niko", 46)
+{% comment %} python上でインサートしたuserが、以下でちゃんとsqlデータベース上に反映されている。 {% endcomment %}
+
+In [4]: get_user_by_token(niko_token)
+Out[4]: SafeUser(id=5, name='niko', leader_card_id=46)
+
+In [5]: get_user_by_token("wdUZxFXT")
+Out[5]: SafeUser(id=3, name='ことり', leader_card_id=44)
+
+In [6]: user = get_user_by_token("wdUZxFXT")
+
+In [7]: user["name"]
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+<ipython-input-7-98d1ebb5bab4> in <module>
+----> 1 user["name"]
+
+TypeError: 'SafeUser' object is not subscriptable
+
+In [8]: user.name
+Out[8]: 'ことり'
+
+
+[4]+  Stopped                 ipython
+(gameserver) @magonotegaeru ➜ /workspaces/gameserver (main ✗) $ mysql webapp
+
+MySQL [webapp]> SELECT * FROM `user`;
++----+-----------+--------------------------------------+----------------+
+| id | name      | token                                | leader_card_id |
++----+-----------+--------------------------------------+----------------+
+|  1 | ほのか    | RKMxBGuK                             |             42 |
+|  2 | えり      | wzehoctC                             |             43 |
+|  3 | ことり    | wdUZxFXT                             |             44 |
+|  4 | うみ      | QwerAsdf                             |             45 |
+|  5 | niko      | 2bbd6b16-dfac-48a7-b1c8-d2919384b03b |             46 |
++----+-----------+--------------------------------------+----------------+
+5 rows in set (0.000 sec)
+
+MySQL [webapp]> 
+
+
+
