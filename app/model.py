@@ -84,3 +84,22 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
             # text(f"UPDATE `user` SET `name`={name} `leader_card_id`=:{leader_card_id} WHERE `id`={user.id}"),
         )
         pass
+
+def create_room() -> None:
+    with engine.begin() as conn:
+        # user = _get_user_by_token(conn, token)
+        # conn.execute("DROP TABLE IF EXISTS `room`")
+        conn.execute(
+            # https://github.com/KLabServerCamp/gameserver/blob/main/docs/api.md
+            # 参照
+            text("CREATE TABLE `room` (`room_id` int,`live_id` int,`joined_user_count` int,`max_user_count` int)")
+        )
+        conn.execute(
+            text("INSERT INTO `room` SET `room_id` = :room_id,`live_id` = :live_id,`joined_user_count` = :joined_user_count,`max_user_count` = :max_user_count"),
+            {"room_id":1,"live_id":11,"joined_user_count":111,"max_user_count":1111}
+        )
+        pass
+# 1228
+# とりあえず、テーブルをサーバ側に送ることはできた。
+
+
