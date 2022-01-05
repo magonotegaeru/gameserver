@@ -26,6 +26,50 @@ class SafeUser(BaseModel):
     class Config:
         orm_mode = True
 
+# 仕様：https://github.com/KLabServerCamp/gameserver/blob/main/docs/api.md#livedifficulty
+# 参考サイト：
+    # https://qiita.com/macinjoke/items/13aa9ba64cf9b688e74a
+
+
+class LiveDifficulty(Enum):
+    normal = 1
+    hard = 2
+
+class JoinRoomResult(Enum):
+    Ok = 1
+    RoomFull = 2
+    Disbanded = 3
+    OtherError = 4
+
+
+class WaitRoomStatus(Enum):
+    Waiting = 1
+    LiveStart = 2
+    Dissolution = 3
+
+
+# Enum型とBasemodel型の違いってなんだ？
+class RoomInfo(BaseModel):
+    room_id: int
+    live_id: int
+    joined_user_count: int
+    max_user_count: int
+
+
+class RoomUser(BaseModel):
+    user_id: int
+    name: str
+    leader_card_id: int
+    select_difficulty: LiveDifficulty
+    is_me: bool
+    is_host: bool
+
+
+class ResultUser(BaseModel):
+    user_id: int
+    judge_count_list: list[int]
+    score: int
+
 
 def create_user(name: str, leader_card_id: int) -> str:
     """Create new user and returns their token"""
@@ -85,21 +129,36 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
         )
         pass
 
-def create_room() -> None:
-    with engine.begin() as conn:
-        # user = _get_user_by_token(conn, token)
-        # conn.execute("DROP TABLE IF EXISTS `room`")
-        conn.execute(
-            # https://github.com/KLabServerCamp/gameserver/blob/main/docs/api.md
-            # 参照
-            text("CREATE TABLE `room` (`room_id` int,`live_id` int,`joined_user_count` int,`max_user_count` int)")
-        )
-        conn.execute(
-            text("INSERT INTO `room` SET `room_id` = :room_id,`live_id` = :live_id,`joined_user_count` = :joined_user_count,`max_user_count` = :max_user_count"),
-            {"room_id":1,"live_id":11,"joined_user_count":111,"max_user_count":1111}
-        )
-        pass
+# def create_room() -> None:
+#     with engine.begin() as conn:
+#         # user = _get_user_by_token(conn, token)
+#         # conn.execute("DROP TABLE IF EXISTS `room`")
+#         conn.execute(
+#             # https://github.com/KLabServerCamp/gameserver/blob/main/docs/api.md
+#             # 参照
+#             text("CREATE TABLE `room` (`room_id` int,`live_id` int,`joined_user_count` int,`max_user_count` int)")
+#         )
+#         conn.execute(
+#             text("INSERT INTO `room` SET `room_id` = :room_id,`live_id` = :live_id,`joined_user_count` = :joined_user_count,`max_user_count` = :max_user_count"),
+#             {"room_id":1,"live_id":11,"joined_user_count":111,"max_user_count":1111}
+#         )
+#         pass
 # 1228
 # とりあえず、テーブルをサーバ側に送ることはできた。
+
+def create_room(live_id: int) -> int:
+    Room = RoomInfo()
+    Room.room_id = int(uuid.uuid4())
+    Room.joined_user_count = 1
+    Room.max_user_count = 4
+    with engine.begin() as conn:
+        conn.execute(
+            text("CREATE TABLE `room` (`room_id` int,`live_id` int,`joined_user_count` int,`max_user_count` int)")
+        )
+        conn.excute(
+            text("INSERT INTO `room` SET `room_id` = :room_id,`live_id` = :live_id,`joined_user_count` = :joined_user_count,`max_user_count` = :max_user_count"),
+            {"room_id":Room.room_id,"live_id":live_id,"joined_user_count":Room.joined_user_count,"max_user_count":Room.max_user_count}
+        )
+        return Room.room_id
 
 

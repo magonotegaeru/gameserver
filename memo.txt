@@ -84,6 +84,8 @@ MySQL [webapp]>
     POST /user/update
         テーブルの、ログインしたユーザの情報について、情報を書き換える。
 
+01/05
+・実装するapiの仕様書はこのurlに指示されている。（https://github.com/KLabServerCamp/gameserver/blob/main/docs/api.md）
 
 
 

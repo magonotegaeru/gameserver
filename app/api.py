@@ -7,6 +7,13 @@ from pydantic import BaseModel
 from . import model
 from .model import SafeUser
 
+from .model import LiveDifficulty
+from .model import JoinRoomResult
+from .model import WaitRoomStatus
+from .model import RoomInfo
+from .model import RoomUser
+
+
 app = FastAPI()
 
 # Sample APIs
@@ -27,7 +34,7 @@ class UserCreateRequest(BaseModel):
 
 class UserCreateResponse(BaseModel):
     user_token: str
-
+    
 
 @app.post("/user/create", response_model=UserCreateResponse)
 def user_create(req: UserCreateRequest):
@@ -67,7 +74,22 @@ def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
     return {}
 
 
-@app.get("/room/create",)
-def create_room():
-    model.create_room()
-    return {"room_id": 1}
+class RoomCreateRequest(BaseModel):
+    live_id: int
+    select_difficulty: LiveDifficulty
+
+class RoomCreateResponse(BaseModel):
+    room_id: int
+
+@app.post("/room/create", response_model=RoomCreateResponse)
+def room_create(req: RoomCreateRequest, token: str = Depends(get_auth_token)):
+    room_id = model.create_room(req.live_id)
+    user = model.get_user_by_token(token)
+    host = RoomUser()
+    host.user_id = user.id
+    host.name = user.name
+    host.leader_card_id = user.leader_card_id
+    host.select_difficulty = req.select_difficulty
+    host.is_me = True
+    host.is_host = True
+    return room_id
