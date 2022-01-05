@@ -85,11 +85,11 @@ class RoomCreateResponse(BaseModel):
 def room_create(req: RoomCreateRequest, token: str = Depends(get_auth_token)):
     room_id = model.create_room(req.live_id)
     user = model.get_user_by_token(token)
-    host = RoomUser()
-    host.user_id = user.id
-    host.name = user.name
-    host.leader_card_id = user.leader_card_id
-    host.select_difficulty = req.select_difficulty
-    host.is_me = True
-    host.is_host = True
-    return room_id
+    host = RoomUser(user_id = user.id, name = user.name, leader_card_id = user.leader_card_id, select_difficulty = req.select_difficulty, is_me = True,is_host = True)
+    # host.user_id = user.id
+    # host.name = user.name
+    # host.leader_card_id = user.leader_card_id
+    # host.select_difficulty = req.select_difficulty
+    # host.is_me = True
+    # host.is_host = True
+    return RoomCreateResponse(room_id=room_id)

@@ -147,17 +147,19 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 # とりあえず、テーブルをサーバ側に送ることはできた。
 
 def create_room(live_id: int) -> int:
-    Room = RoomInfo()
-    Room.room_id = int(uuid.uuid4())
-    Room.joined_user_count = 1
-    Room.max_user_count = 4
+    # Room = RoomInfo(room_id=int(uuid.uuid4()), joined_user_count=1, max_user_count=4)
+    Room = RoomInfo(room_id=42, live_id=live_id, joined_user_count=1, max_user_count=4)
+
+    # Room.room_id = int(uuid.uuid4())
+    # Room.joined_user_count = 1
+    # Room.max_user_count = 4
     with engine.begin() as conn:
         conn.execute(
             text("CREATE TABLE `room` (`room_id` int,`live_id` int,`joined_user_count` int,`max_user_count` int)")
         )
-        conn.excute(
+        conn.execute(
             text("INSERT INTO `room` SET `room_id` = :room_id,`live_id` = :live_id,`joined_user_count` = :joined_user_count,`max_user_count` = :max_user_count"),
-            {"room_id":Room.room_id,"live_id":live_id,"joined_user_count":Room.joined_user_count,"max_user_count":Room.max_user_count}
+            {"room_id":Room.room_id,"live_id":Room.live_id,"joined_user_count":Room.joined_user_count,"max_user_count":Room.max_user_count}
         )
         return Room.room_id
 
