@@ -28,3 +28,17 @@ SELECT `id`, `name`, `token`, `leader_card_id` FROM `user`;
 -- SELECT * FROM `user` WHERE `id`=2;
 -- select * from `user` where `token`="wzehoctC";
 -- 実行できたコマンドの確認用ログ
+
+DROP TABLE IF EXISTS `room`;
+CREATE TABLE `room` (
+  `room_id` int,
+  `live_id` int,
+  `joined_user_count` int,
+  `max_user_count` int
+);
+
+DROP TABLE IF EXISTS `room_member`;
+CREATE TABLE `room_member` (
+  `room_id` int,
+  `user_id` int
+);

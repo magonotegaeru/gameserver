@@ -83,13 +83,23 @@ class RoomCreateResponse(BaseModel):
 
 @app.post("/room/create", response_model=RoomCreateResponse)
 def room_create(req: RoomCreateRequest, token: str = Depends(get_auth_token)):
-    room_id = model.create_room(req.live_id)
+    # room_id = model.create_room(req.live_id)
     user = model.get_user_by_token(token)
-    host = RoomUser(user_id = user.id, name = user.name, leader_card_id = user.leader_card_id, select_difficulty = req.select_difficulty, is_me = True,is_host = True)
-    # host.user_id = user.id
-    # host.name = user.name
-    # host.leader_card_id = user.leader_card_id
-    # host.select_difficulty = req.select_difficulty
-    # host.is_me = True
-    # host.is_host = True
+    room_id = user.id + 100
+    model.create_room(room_id, req.live_id)
+    # owner = RoomUser(user_id = user.id, name = user.name, leader_card_id = user.leader_card_id, select_difficulty = req.select_difficulty, is_me = True,is_host = True)
+    # model.insert_room_member(room_id,owner.user_id)
+    model.insert_room_member(room_id, user.id)
     return RoomCreateResponse(room_id=room_id)
+
+class RoomListRequest(BaseModel):
+    live_id: int
+
+class RoomListResponse(BaseModel):
+    room_info_list: list[RoomInfo]
+
+@app.get("/room/list", response_model=RoomListResponse)
+def list_room(req: RoomListRequest):
+    room_list = model.get_room_list(req.live_id)
+    return RoomListResponse(room_info_list=room_list)
+

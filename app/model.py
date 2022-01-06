@@ -146,21 +146,37 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 # 1228
 # とりあえず、テーブルをサーバ側に送ることはできた。
 
-def create_room(live_id: int) -> int:
+def create_room(room_id: int,live_id: int) -> None:
     # Room = RoomInfo(room_id=int(uuid.uuid4()), joined_user_count=1, max_user_count=4)
-    Room = RoomInfo(room_id=42, live_id=live_id, joined_user_count=1, max_user_count=4)
-
-    # Room.room_id = int(uuid.uuid4())
-    # Room.joined_user_count = 1
-    # Room.max_user_count = 4
+    Room = RoomInfo(room_id=room_id, live_id=live_id, joined_user_count=1, max_user_count=4)
     with engine.begin() as conn:
-        conn.execute(
-            text("CREATE TABLE `room` (`room_id` int,`live_id` int,`joined_user_count` int,`max_user_count` int)")
-        )
+        # conn.execute(
+        #     text("CREATE TABLE `room` (`room_id` int,`live_id` int,`joined_user_count` int,`max_user_count` int)")
+        # )
         conn.execute(
             text("INSERT INTO `room` SET `room_id` = :room_id,`live_id` = :live_id,`joined_user_count` = :joined_user_count,`max_user_count` = :max_user_count"),
             {"room_id":Room.room_id,"live_id":Room.live_id,"joined_user_count":Room.joined_user_count,"max_user_count":Room.max_user_count}
         )
-        return Room.room_id
+        # return Room.room_id
+        pass
 
+def insert_room_member(room_id: int, user_id: int) -> None:
+    with engine.begin() as conn:
+        conn.execute(
+            text("INSERT INTO `room_member` SET `room_id` = :room_id,`user_id` = :user_id"),
+            {"room_id":room_id,"user_id":user_id}
+        )
+        pass
 
+def get_room_list(live_id: int) -> list[RoomInfo]:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text("SELECT * FROM `room` WHERE `live_id` = :live_id"),
+            {"room_id":live_id}
+        )
+        try:
+            row = result.one()
+        except NoResultFound:
+            return None
+        print(row)
+        return row
