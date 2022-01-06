@@ -168,15 +168,22 @@ def insert_room_member(room_id: int, user_id: int) -> None:
         )
         pass
 
-def get_room_list(live_id: int) -> list[RoomInfo]:
+# def get_room_list(live_id: int) -> list[RoomInfo]:
+def get_room_list(live_id: int):
     with engine.begin() as conn:
         result = conn.execute(
             text("SELECT * FROM `room` WHERE `live_id` = :live_id"),
-            {"room_id":live_id}
+            {"live_id":live_id}
         )
         try:
-            row = result.one()
+            row = result.all()
         except NoResultFound:
             return None
         print(row)
         return row
+
+
+
+
+
+

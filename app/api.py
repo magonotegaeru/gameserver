@@ -98,8 +98,14 @@ class RoomListRequest(BaseModel):
 class RoomListResponse(BaseModel):
     room_info_list: list[RoomInfo]
 
-@app.get("/room/list", response_model=RoomListResponse)
+@app.post("/room/list", response_model=RoomListResponse)
 def list_room(req: RoomListRequest):
     room_list = model.get_room_list(req.live_id)
     return RoomListResponse(room_info_list=room_list)
+
+
+
+
+
+
 
