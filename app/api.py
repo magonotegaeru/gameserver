@@ -126,6 +126,8 @@ def join_room(req: RoomJoinRequest, token: str = Depends(get_auth_token)):
     result = model.join_room(req.room_id, user.id)
     return  RoomJoinResponse(join_room_result=result)
 
+# 0107 タスク３（join/room）まで、何とか実装できた。
+
 
 
 

@@ -215,6 +215,7 @@ def join_room(room_id: int, user_id: int) -> JoinRoomResult:
     else :
         return JoinRoomResult.OtherError
 
+# 0107 タスク３（join/room）まで、何とか実装できた。
 
 
 
