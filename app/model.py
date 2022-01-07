@@ -179,9 +179,41 @@ def get_room_list(live_id: int):
             row = result.all()
         except NoResultFound:
             return None
-        print(row)
+        # print(row)
         return row
 
+def join_room(room_id: int, user_id: int) -> JoinRoomResult:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text("SELECT `joined_user_count`, `max_user_count` FROM `room` WHERE `room_id` = :room_id"),
+            {"room_id":room_id}
+        )
+        try:
+            row = result.all()
+        except NoResultFound:
+            return JoinRoomResult.Disbanded
+        
+    joined_user_count = int(row[0]["joined_user_count"])
+    max_user_count = int(row[0]["max_user_count"])
+
+    if (joined_user_count < max_user_count):
+        new_joined_user_count = joined_user_count + 1
+        with engine.begin() as conn:
+            conn.execute(
+                text("UPDATE `room` SET `joined_user_count`=:new_joined_user_count WHERE `room_id`=:room_id"),
+                {"new_joined_user_count":new_joined_user_count, "room_id":room_id}
+            )
+            conn.execute(
+                text("INSERT INTO `room_member` SET `room_id` = :room_id,`user_id` = :user_id"),
+                {"room_id":room_id,"user_id":user_id}
+            )
+            return JoinRoomResult.Ok
+    
+    elif (joined_user_count == max_user_count):
+        return JoinRoomResult.RoomFull
+    
+    else :
+        return JoinRoomResult.OtherError
 
 
 
